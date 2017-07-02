@@ -1,6 +1,7 @@
 package org.hombro.cheese.api
 
 import org.jsoup.Jsoup
+import org.jsoup.select.Elements
 
 import scala.collection.mutable.ListBuffer
 
@@ -20,8 +21,23 @@ object CheeseInfo {
     }
 
     def fromColon(s: String) = s.split(":")(1).substring(1)
+    def getLine(begin: String, elements: Elements): String = {
+      for (i <- 0 until elements.size()) {
+        if (elements.get(i).text().startsWith(begin))
+          return fromColon(elements.get(i).text())
+      }
+      ""
+    }
+    val listElements = summary.getElementsByTag("ul").get(0).getElementsByTag("li")
 
-    CheeseInfo(name, description.mkString("\n"))
+    CheeseInfo(name, description.mkString("\n"),
+      getLine("Region", listElements),
+      getLine("Family", listElements),
+      getLine("Rind", listElements),
+      getLine("Colour", listElements),
+      getLine("Aroma", listElements),
+      getLine("Procuders", listElements).split(",").toList
+    )
   }
 
   def parseNames(htmls: List[String]) = {
@@ -39,4 +55,10 @@ object CheeseInfo {
 }
 
 case class CheeseInfo(val name: String,
-                      val description: String)
+                      val description: String,
+                      val region: String,
+                      val family: String,
+                      val rind: String,
+                      val colour: String,
+                      val aroma: String,
+                      val producers: List[String])
