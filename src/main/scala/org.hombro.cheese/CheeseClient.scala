@@ -11,7 +11,9 @@ import scalaj.http.{Http, HttpRequest}
   */
 object CheeseClient {
   private val BASE_URL = "http://www.cheese.com/"
-  private val ENDPOINT_ALPHA = "alphabetical/"
+  private val ENDPOINT_ALPHA = BASE_URL + "alphabetical/"
+
+  protected def cheeseInfoEndpoint(name: String) = BASE_URL + name.toLowerCase() + "/"
 }
 
 trait CheeseAPI {
@@ -22,6 +24,7 @@ trait CheeseAPI {
 
 case class CheeseClient() extends CheeseAPI {
   val logger = Logger(classOf[CheeseClient])
+
   private def getThePages(request: HttpRequest, page: Int) = {
 
     @tailrec
@@ -32,7 +35,7 @@ case class CheeseClient() extends CheeseAPI {
       val out = toHit.asString.body
       if (out == prev)
         list ++ List(out)
-      else{
+      else {
         _helper(request, page + 1, out, list ++ List(out))
       }
     }
@@ -45,11 +48,11 @@ case class CheeseClient() extends CheeseAPI {
     val pages = if (startingWith.isEmpty)
       getThePages(Http(CheeseClient.BASE_URL), 0)
     else
-      getThePages(Http(CheeseClient.BASE_URL + CheeseClient.ENDPOINT_ALPHA).param("i", startingWith.toLowerCase), 0)
+      getThePages(Http(CheeseClient.ENDPOINT_ALPHA).param("i", startingWith.toLowerCase), 0)
     CheeseInfo.parseNames(pages)
   }
 
   def getCheeseInfo(cheeseName: String) = {
-    CheeseInfo.parseInfo(Http(CheeseClient.BASE_URL + cheeseName.toLowerCase() + "/").asString.body)
+    CheeseInfo.parseInfo(Http(CheeseClient.cheeseInfoEndpoint(cheeseName)).asString.body)
   }
 }
