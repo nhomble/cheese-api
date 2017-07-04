@@ -13,7 +13,7 @@ object CheeseClient {
   private val BASE_URL = "https://www.cheese.com/"
   private val ENDPOINT_ALPHA = BASE_URL + "alphabetical/"
 
-  protected def cheeseInfoEndpoint(name: String) = BASE_URL + name.toLowerCase() + "/"
+  protected def cheeseInfoEndpoint(name: String) = BASE_URL + name.toLowerCase().replace(" ", "-") + "/"
 }
 
 trait CheeseAPI {
