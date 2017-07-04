@@ -4,13 +4,13 @@ import com.typesafe.scalalogging.Logger
 import org.hombro.cheese.api.CheeseInfo
 
 import scala.annotation.tailrec
-import scalaj.http.{Http, HttpRequest}
+import scalaj.http.{HttpOptions, Http, HttpRequest}
 
 /**
   * Created by nicolas on 7/1/2017.
   */
 object CheeseClient {
-  private val BASE_URL = "http://www.cheese.com/"
+  private val BASE_URL = "https://www.cheese.com/"
   private val ENDPOINT_ALPHA = BASE_URL + "alphabetical/"
 
   protected def cheeseInfoEndpoint(name: String) = BASE_URL + name.toLowerCase() + "/"
@@ -32,6 +32,7 @@ case class CheeseClient() extends CheeseAPI {
       val toHit = request
         .param("page", page.toString)
         .param("per_page", "100") // best we can do
+        .option(HttpOptions.allowUnsafeSSL)
       val out = toHit.asString.body
       if (out == prev)
         list ++ List(out)
@@ -53,6 +54,6 @@ case class CheeseClient() extends CheeseAPI {
   }
 
   def getCheeseInfo(cheeseName: String) = {
-    CheeseInfo.parseInfo(Http(CheeseClient.cheeseInfoEndpoint(cheeseName)).asString.body)
+    CheeseInfo.parseInfo(Http(CheeseClient.cheeseInfoEndpoint(cheeseName)).option(HttpOptions.allowUnsafeSSL).asString.body)
   }
 }
