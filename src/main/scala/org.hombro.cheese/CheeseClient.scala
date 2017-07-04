@@ -11,7 +11,7 @@ import scalaj.http.{Http, HttpOptions, HttpRequest}
 /**
   * Created by nicolas on 7/4/2017.
   */
-case class CheeseClient() extends CheeseAPI {
+case class CheeseClient() extends CheeseAPI with CheeseGatherer {
   private val baseUrl = "https://www.cheese.com/"
   private val alphaEndpoint = baseUrl + "alphabetical/"
 

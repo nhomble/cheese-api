@@ -11,7 +11,7 @@ import scalaj.http.Http
 /**
   * Created by nicolas on 7/4/2017.
   */
-case class WikiClient() extends CheeseAPI {
+case class WikiClient() extends CheeseAPI with CheeseEnricher {
   private val (cheeseList, nameToLink) = parsePage()
 
   private def webPage() = Http("https://en.wikipedia.org/wiki/List_of_cheeses").asString.body
@@ -58,7 +58,17 @@ case class WikiClient() extends CheeseAPI {
 
   override def getCheeseNames(startingWith: String = "") = if (startingWith.isEmpty) cheeseList else cheeseList.filter(_.startsWith(startingWith))
 
-  def wikiLink(cheeseName: String) = nameToLink.getOrElse(cheeseName.toLowerCase(), None)
+  def wikiLink(cheeseName: String) = nameToLink.getOrElse(cheeseName.toLowerCase(), nameToLink.getOrElse(cheeseName.toLowerCase() + " cheese", None))
 
-  override def getCheeseInfo(cheeseName: String): CheeseInfo = ???
+  override def enrichCheeseInfo(info: CheeseInfo): CheeseInfo = CheeseInfo(
+    info.name,
+    info.description,
+    info.region,
+    info.family,
+    info.rind,
+    info.colour,
+    info.aroma,
+    info.producers,
+    wikiLink(info.name)
+  )
 }
