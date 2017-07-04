@@ -20,6 +20,7 @@ object CheeseInfo {
     for (i <- 0 until summary.getElementsByTag("p").size()) {
       description.append(summary.getElementsByTag("p").get(i).text())
     }
+    description -= description.last // hacky, but the final paragraph should be an <h>
 
     def fromColon(s: String) = s.split(":")(1).substring(1)
     def getLine(begin: String, elements: Elements): String = {
