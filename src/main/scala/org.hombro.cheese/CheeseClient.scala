@@ -17,7 +17,7 @@ object CheeseClient {
 }
 
 trait CheeseAPI {
-  def getCheese(startingWith: String): List[String]
+  def getCheeseNames(startingWith: String): List[String]
 
   def getCheeseInfo(cheeseName: String): CheeseInfo
 }
@@ -43,7 +43,7 @@ case class CheeseClient() extends CheeseAPI {
     _helper(request, page, "", List())
   }
 
-  def getCheese(startingWith: String = "") = {
+  def getCheeseNames(startingWith: String = "") = {
     assert(startingWith.length <= 1)
     val pages = if (startingWith.isEmpty)
       getThePages(Http(CheeseClient.BASE_URL), 0)
