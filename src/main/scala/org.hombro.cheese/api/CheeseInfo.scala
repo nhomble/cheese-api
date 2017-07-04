@@ -36,7 +36,7 @@ object CheeseInfo {
       getLine("Rind", listElements),
       getLine("Colour", listElements),
       getLine("Aroma", listElements),
-      getLine("Procuders", listElements).split(",").toList
+      getLine("Producers", listElements).split(",").toList
     )
   }
 
