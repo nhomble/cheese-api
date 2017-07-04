@@ -1,5 +1,6 @@
 package org.hombro.cheese.api
 
+import argonaut._, Argonaut._
 import org.jsoup.Jsoup
 import org.jsoup.select.Elements
 
@@ -61,4 +62,15 @@ case class CheeseInfo(val name: String,
                       val rind: String,
                       val colour: String,
                       val aroma: String,
-                      val producers: List[String])
+                      val producers: List[String]) {
+  def toJson = Json(
+    "name"        := name,
+    "description" := description,
+    "region"      := region,
+    "family"      := family,
+    "rind"        := rind,
+    "colour"      := colour,
+    "aroma"       := aroma,
+    "producers"   := producers
+  ).toString()
+}
