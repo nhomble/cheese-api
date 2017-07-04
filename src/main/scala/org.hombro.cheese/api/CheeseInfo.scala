@@ -36,7 +36,7 @@ object CheeseInfo {
       getLine("Family", listElements),
       getLine("Rind", listElements),
       getLine("Colour", listElements),
-      getLine("Aroma", listElements),
+      getLine("Aroma", listElements).split(", ").toList,
       getLine("Producers", listElements).split(",").toList
     )
   }
@@ -61,7 +61,7 @@ case class CheeseInfo(val name: String,
                       val family: String,
                       val rind: String,
                       val colour: String,
-                      val aroma: String,
+                      val aroma: List[String],
                       val producers: List[String]) {
   def toJson = Json(
     "name"        := name,
