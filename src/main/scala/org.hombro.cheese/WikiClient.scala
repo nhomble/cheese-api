@@ -4,8 +4,7 @@ import org.hombro.cheese.api.CheeseInfo
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
 
-import scala.collection.mutable
-import scala.collection.mutable.ListBuffer
+import scala.collection.immutable.IndexedSeq
 import scalaj.http.Http
 
 /**
@@ -15,9 +14,6 @@ object WikiClient {
   private def webPage() = Http("https://en.wikipedia.org/wiki/List_of_cheeses").asString.body
 
   private def parsePage() = {
-    val names = ListBuffer[String]()
-    val nameToLink = mutable.Map[String, Option[String]]()
-
     val soup = Jsoup.parse(webPage())
     val wikitables = soup.getElementsByClass("wikitable")
 
@@ -36,22 +32,26 @@ object WikiClient {
       }
     }
 
-    def grabFromWikiTable(table: Element) = {
+    def grabFromWikiTable(table: Element): IndexedSeq[Option[(String, Option[String])]] = {
       val rows = soup.getElementsByTag("tr")
-      for (i <- 0 until rows.size()) {
+      for (i <- 0 until rows.size()) yield {
         if (rows.get(i).getElementsByTag("td").size() > 0) {
           val td = rows.get(i).getElementsByTag("td").get(0)
-          val (name, link) = parseName(td)
-          names += name
-          nameToLink += (name -> link)
+          Some(parseName(td))
+        }
+        else {
+          None
         }
       }
     }
 
-    for (i <- 0 until wikitables.size()) {
+    val out: IndexedSeq[IndexedSeq[(String, Option[String])]] = for (i <- 0 until wikitables.size()) yield {
       grabFromWikiTable(wikitables.get(i))
-    }
-    (names.result(), nameToLink.toMap)
+    }.flatten
+
+    val names: List[String] = out.flatMap(l => l.map(t => t._1)).toList
+    val nameToLink: Map[String, Option[String]] = out.flatMap(l => l.map(t => t._1 -> t._2)).toMap
+    (names, nameToLink)
   }
 
   def apply() = {
