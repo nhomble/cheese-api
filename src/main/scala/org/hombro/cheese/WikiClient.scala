@@ -63,7 +63,7 @@ object WikiClient {
 case class WikiClient private(val cheeseList: List[String], val nameToLink: Map[String, Option[String]]) extends CheeseAPI with CheeseEnricher {
   override def getCheeseNames(startingWith: String = "") = if (startingWith.isEmpty) cheeseList else cheeseList.filter(_.startsWith(startingWith))
 
-  def wikiLink(cheeseName: String) = nameToLink.getOrElse(cheeseName.toLowerCase(), nameToLink.getOrElse(cheeseName.toLowerCase() + " org", None))
+  def wikiLink(cheeseName: String) = nameToLink.getOrElse(cheeseName.toLowerCase(), nameToLink.getOrElse(cheeseName.toLowerCase() + " cheese", None))
 
   override def enrichCheeseInfo(info: CheeseInfo): CheeseInfo = CheeseInfo(
     info.name,
