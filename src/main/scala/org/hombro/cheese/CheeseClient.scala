@@ -1,5 +1,6 @@
 package org.hombro.cheese
 
+import org.apache.commons.lang3.StringUtils
 import org.hombro.cheese.api.CheeseInfo
 import org.jsoup.Jsoup
 import org.jsoup.select.Elements
@@ -83,7 +84,25 @@ case class CheeseClient() extends CheeseAPI with CheeseGatherer {
   private val baseUrl = "https://www.cheese.com/"
   private val alphaEndpoint = baseUrl + "alphabetical/"
 
-  private def cheeseInfoEndpoint(name: String) = baseUrl + name.toLowerCase().replace(" ", "-") + "/"
+  // 90% of the listed cheeses
+  private def sanitizeName(name: String) = {
+    StringUtils.stripAccents(name).toLowerCase
+      .replace(" a ", "-")
+      .replace(" ", "-")
+      .replace("’", "")
+      .replace(",", "")
+      .replace("'", "")
+      .replace("(", "")
+      .replace(")", "")
+      .replace(".", "")
+      .replace("of", "")
+      .replace("%", "")
+      .replace("&", "")
+      .replace("---", "-")
+      .replace("--", "-")
+  }
+
+  private def cheeseInfoEndpoint(name: String) = baseUrl + sanitizeName(name) + "/"
 
   def getCheeseNames(startingWith: String = "") = {
     assert(startingWith.length <= 1)
@@ -95,6 +114,8 @@ case class CheeseClient() extends CheeseAPI with CheeseGatherer {
   }
 
   def getCheeseInfo(cheeseName: String) = {
-    CheeseClient.parseInfo(Http(cheeseInfoEndpoint(cheeseName)).option(HttpOptions.allowUnsafeSSL).asString.body)
+    val endpoint = cheeseInfoEndpoint(cheeseName)
+    val response = Http(endpoint).option(HttpOptions.allowUnsafeSSL).asString
+    if(response.isError) None else Some(CheeseClient.parseInfo(response.body))
   }
 }

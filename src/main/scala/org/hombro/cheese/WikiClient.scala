@@ -3,6 +3,7 @@ package org.hombro.cheese
 import org.hombro.cheese.api.CheeseInfo
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Element
+import org.jsoup.select.Elements
 
 import scala.collection.immutable.IndexedSeq
 import scalaj.http.Http
@@ -58,18 +59,29 @@ object WikiClient {
     val html = Http(url).asString.body
     val soup = Jsoup.parse(html)
 
-    Some("https:" + soup.getElementsByClass("infobox").get(0).getElementsByTag("img").attr("src"))
+    def theImg(element: Elements) = {
+      val img = element.get(0).getElementsByTag("img")
+      if (img.size() > 1) Some("https:" + img.attr("src")) else None
+    }
+
+    val infoBox = soup.getElementsByClass("infobox")
+    if (infoBox.size() > 0) {
+      theImg(infoBox)
+    }
+    else {
+      val thumb = soup.getElementsByClass("thumb")
+      if(thumb.size() > 0) theImg(thumb) else None
+    }
   }
 
   def apply() = {
     val (cheeseList, nameToLink) = parsePage()
-    new WikiClient(cheeseList, nameToLink, Map())
+    new WikiClient(cheeseList, nameToLink)
   }
 }
 
 case class WikiClient private(val cheeseList: List[String],
-                              val nameToLink: Map[String, Option[String]],
-                              val nameToImg: Map[String, Option[String]]) extends CheeseAPI with CheeseEnricher {
+                              val nameToLink: Map[String, Option[String]]) extends CheeseAPI with CheeseEnricher {
   override def getCheeseNames(startingWith: String = "") = if (startingWith.isEmpty) cheeseList else cheeseList.filter(_.startsWith(startingWith))
 
   private def wikiLink(cheeseName: String) = nameToLink.getOrElse(cheeseName, nameToLink.getOrElse(cheeseName + " cheese", None))

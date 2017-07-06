@@ -7,7 +7,8 @@ pull stuff off of cheese.com for some apps
 package org.hombro.cheese
 object Example extends App {
   val client = CheeseClient()
-  val cheese = client.getCheeseNames(startingWith = "a")
-  print(cheese)
+  val wiki = WikiClient()
+  val info = client.getCheeseInfo("pepper jack").get
+  print(wiki.enrichCheeseInfo(info).toJson)
 }
 ```

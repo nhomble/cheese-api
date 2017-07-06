@@ -7,11 +7,10 @@ import org.hombro.cheese.api.CheeseInfo
   */
 trait CheeseAPI {
   def getCheeseNames(startingWith: String): List[String]
-
 }
 
 trait CheeseGatherer {
-  def getCheeseInfo(cheeseName: String): CheeseInfo
+  def getCheeseInfo(cheeseName: String): Option[CheeseInfo]
 }
 
 trait CheeseEnricher {
