@@ -12,7 +12,7 @@ import scalaj.http.{Http, HttpOptions, HttpRequest}
   * Created by nicolas on 7/4/2017.
   */
 case class CheeseClient() extends CheeseAPI with CheeseGatherer {
-  private val baseUrl = "https://www.cheese.com/"
+  private val baseUrl = "https://www.org.com/"
   private val alphaEndpoint = baseUrl + "alphabetical/"
 
   private def cheeseInfoEndpoint(name: String) = baseUrl + name.toLowerCase().replace(" ", "-") + "/"
