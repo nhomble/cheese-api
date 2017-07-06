@@ -11,44 +11,7 @@ import scalaj.http.{Http, HttpOptions, HttpRequest}
 /**
   * Created by nicolas on 7/4/2017.
   */
-case class CheeseClient() extends CheeseAPI with CheeseGatherer {
-  private val baseUrl = "https://www.org.com/"
-  private val alphaEndpoint = baseUrl + "alphabetical/"
-
-  private def cheeseInfoEndpoint(name: String) = baseUrl + name.toLowerCase().replace(" ", "-") + "/"
-
-  private def getThePages(request: HttpRequest, page: Int) = {
-
-    @tailrec
-    def _helper(request: HttpRequest, page: Int, prev: String, list: List[String]): List[String] = {
-      val toHit = request
-        .param("page", page.toString)
-        .param("per_page", "100") // best we can do
-        .option(HttpOptions.allowUnsafeSSL)
-      val out = toHit.asString.body
-      if (out == prev)
-        list ++ List(out)
-      else {
-        _helper(request, page + 1, out, list ++ List(out))
-      }
-    }
-
-    _helper(request, page, "", List())
-  }
-
-  def getCheeseNames(startingWith: String = "") = {
-    assert(startingWith.length <= 1)
-    val pages = if (startingWith.isEmpty)
-      getThePages(Http(baseUrl), 0)
-    else
-      getThePages(Http(alphaEndpoint).param("i", startingWith.toLowerCase), 0)
-    parseNames(pages)
-  }
-
-  def getCheeseInfo(cheeseName: String) = {
-    parseInfo(Http(cheeseInfoEndpoint(cheeseName)).option(HttpOptions.allowUnsafeSSL).asString.body)
-  }
-
+object CheeseClient {
   private def parseInfo(html: String) = {
     val soup = Jsoup.parse(html)
     val name = soup.getElementsByClass("unit").get(0).getElementsByTag("h3").get(0).text()
@@ -95,5 +58,44 @@ case class CheeseClient() extends CheeseAPI with CheeseGatherer {
       buffer.toList
     }
     htmls flatMap parsePage
+  }
+
+  private def getThePages(request: HttpRequest, page: Int) = {
+
+    @tailrec
+    def _helper(request: HttpRequest, page: Int, prev: String, list: List[String]): List[String] = {
+      val toHit = request
+        .param("page", page.toString)
+        .param("per_page", "100") // best we can do
+        .option(HttpOptions.allowUnsafeSSL)
+      val out = toHit.asString.body
+      if (out == prev)
+        list ++ List(out)
+      else {
+        _helper(request, page + 1, out, list ++ List(out))
+      }
+    }
+
+    _helper(request, page, "", List())
+  }
+}
+
+case class CheeseClient() extends CheeseAPI with CheeseGatherer {
+  private val baseUrl = "https://www.cheese.com/"
+  private val alphaEndpoint = baseUrl + "alphabetical/"
+
+  private def cheeseInfoEndpoint(name: String) = baseUrl + name.toLowerCase().replace(" ", "-") + "/"
+
+  def getCheeseNames(startingWith: String = "") = {
+    assert(startingWith.length <= 1)
+    val pages = if (startingWith.isEmpty)
+      CheeseClient.getThePages(Http(baseUrl), 0)
+    else
+      CheeseClient.getThePages(Http(alphaEndpoint).param("i", startingWith.toLowerCase), 0)
+    CheeseClient.parseNames(pages)
+  }
+
+  def getCheeseInfo(cheeseName: String) = {
+    CheeseClient.parseInfo(Http(cheeseInfoEndpoint(cheeseName)).option(HttpOptions.allowUnsafeSSL).asString.body)
   }
 }
