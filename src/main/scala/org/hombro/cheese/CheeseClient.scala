@@ -42,8 +42,7 @@ object CheeseClient {
       getLine("Rind", listElements),
       getLine("Colour", listElements),
       getLine("Aroma", listElements).split(", ").toList,
-      getLine("Producers", listElements).split(",").toList,
-      None
+      getLine("Producers", listElements).split(",").toList
     )
   }
 

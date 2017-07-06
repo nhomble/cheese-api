@@ -54,16 +54,32 @@ object WikiClient {
     (names, nameToLink)
   }
 
+  def parseImgLink(url: String) = {
+    val html = Http(url).asString.body
+    val soup = Jsoup.parse(html)
+
+    Some("https:" + soup.getElementsByClass("infobox").get(0).getElementsByTag("img").attr("src"))
+  }
+
   def apply() = {
     val (cheeseList, nameToLink) = parsePage()
-    new WikiClient(cheeseList, nameToLink)
+    new WikiClient(cheeseList, nameToLink, Map())
   }
 }
 
-case class WikiClient private(val cheeseList: List[String], val nameToLink: Map[String, Option[String]]) extends CheeseAPI with CheeseEnricher {
+case class WikiClient private(val cheeseList: List[String],
+                              val nameToLink: Map[String, Option[String]],
+                              val nameToImg: Map[String, Option[String]]) extends CheeseAPI with CheeseEnricher {
   override def getCheeseNames(startingWith: String = "") = if (startingWith.isEmpty) cheeseList else cheeseList.filter(_.startsWith(startingWith))
 
-  def wikiLink(cheeseName: String) = nameToLink.getOrElse(cheeseName.toLowerCase(), nameToLink.getOrElse(cheeseName.toLowerCase() + " cheese", None))
+  private def wikiLink(cheeseName: String) = nameToLink.getOrElse(cheeseName, nameToLink.getOrElse(cheeseName + " cheese", None))
+
+  private def imageLink(cheeseName: String) = {
+    wikiLink(cheeseName) match {
+      case Some(url) => WikiClient.parseImgLink(url)
+      case None => None
+    }
+  }
 
   override def enrichCheeseInfo(info: CheeseInfo): CheeseInfo = CheeseInfo(
     info.name,
@@ -74,6 +90,7 @@ case class WikiClient private(val cheeseList: List[String], val nameToLink: Map[
     info.colour,
     info.aroma,
     info.producers,
-    wikiLink(info.name)
+    wikiLink = wikiLink(info.name.toLowerCase()),
+    imgLink = imageLink(info.name.toLowerCase())
   )
 }

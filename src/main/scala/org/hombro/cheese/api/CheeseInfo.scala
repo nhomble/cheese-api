@@ -14,9 +14,11 @@ case class CheeseInfo(val name: String,
                       val colour: String,
                       val aroma: List[String],
                       val producers: List[String],
-                      val wikiLink: Option[String]) {
+                      val wikiLink: Option[String] = None,
+                      val imgLink: Option[String] = None) {
   def toJson = {
     val _wikiLink = if (wikiLink.isDefined) wikiLink.get else ""
+    val _imgLink = if (imgLink.isDefined) imgLink.get else ""
     Json(
       "name" := name,
       "description" := description,
@@ -28,7 +30,10 @@ case class CheeseInfo(val name: String,
       "producers" := producers,
 
       "hasWiki" := _wikiLink.nonEmpty,
-      "wikiLink" := _wikiLink
+      "wikiLink" := _wikiLink,
+
+      "hasImg" := _imgLink.nonEmpty,
+      "imgLink" := _imgLink
     ).toString()
   }
 }
