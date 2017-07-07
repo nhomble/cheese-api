@@ -102,6 +102,7 @@ case class WikiClient private(val cheeseList: List[String],
     info.colour,
     info.aroma,
     info.producers,
+    info.cheeseImg,
     wikiLink = wikiLink(info.name.toLowerCase()),
     imgLink = imageLink(info.name.toLowerCase())
   )

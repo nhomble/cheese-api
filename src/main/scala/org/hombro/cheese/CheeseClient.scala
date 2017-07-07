@@ -13,10 +13,19 @@ import scalaj.http.{Http, HttpOptions, HttpRequest}
   * Created by nicolas on 7/4/2017.
   */
 object CheeseClient {
+  private val baseUrl = "https://www.cheese.com/"
+  private val alphaEndpoint = baseUrl + "alphabetical/"
+
   private def parseInfo(html: String) = {
     val soup = Jsoup.parse(html)
     val name = soup.getElementsByClass("unit").get(0).getElementsByTag("h3").get(0).text()
     val summary = soup.getElementsByClass("summary").get(0)
+
+    val img =
+      if (soup.select(".tmb img").size() > 0)
+        Some(baseUrl + soup.select(".tmb img").get(0).attr("src"))
+      else
+        None
 
     val description = ListBuffer[String]()
 
@@ -43,7 +52,8 @@ object CheeseClient {
       getLine("Rind", listElements),
       getLine("Colour", listElements),
       getLine("Aroma", listElements).split(", ").toList,
-      getLine("Producers", listElements).split(",").toList
+      getLine("Producers", listElements).split(",").toList,
+      img
     )
   }
 
@@ -81,9 +91,6 @@ object CheeseClient {
 }
 
 case class CheeseClient() extends CheeseAPI with CheeseGatherer {
-  private val baseUrl = "https://www.cheese.com/"
-  private val alphaEndpoint = baseUrl + "alphabetical/"
-
   // 90% of the listed cheeses
   private def sanitizeName(name: String) = {
     StringUtils.stripAccents(name).toLowerCase
@@ -102,20 +109,20 @@ case class CheeseClient() extends CheeseAPI with CheeseGatherer {
       .replace("--", "-")
   }
 
-  private def cheeseInfoEndpoint(name: String) = baseUrl + sanitizeName(name) + "/"
+  private def cheeseInfoEndpoint(name: String) = CheeseClient.baseUrl + sanitizeName(name) + "/"
 
   def getCheeseNames(startingWith: String = "") = {
     assert(startingWith.length <= 1)
     val pages = if (startingWith.isEmpty)
-      CheeseClient.getThePages(Http(baseUrl), 0)
+      CheeseClient.getThePages(Http(CheeseClient.baseUrl), 0)
     else
-      CheeseClient.getThePages(Http(alphaEndpoint).param("i", startingWith.toLowerCase), 0)
+      CheeseClient.getThePages(Http(CheeseClient.alphaEndpoint).param("i", startingWith.toLowerCase), 0)
     CheeseClient.parseNames(pages)
   }
 
   def getCheeseInfo(cheeseName: String) = {
     val endpoint = cheeseInfoEndpoint(cheeseName)
     val response = Http(endpoint).option(HttpOptions.allowUnsafeSSL).asString
-    if(response.isError) None else Some(CheeseClient.parseInfo(response.body))
+    if (response.isError) None else Some(CheeseClient.parseInfo(response.body))
   }
 }
