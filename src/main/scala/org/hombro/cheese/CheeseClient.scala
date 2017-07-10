@@ -27,12 +27,9 @@ object CheeseClient {
       else
         None
 
-    val description = ListBuffer[String]()
-
-    for (i <- 0 until summary.getElementsByTag("p").size()) {
-      description.append(summary.getElementsByTag("p").get(i).text())
-    }
-    description -= description.last // hacky, but the final paragraph should be an <h>
+    val description = for (i <- 0 until summary.getElementsByTag("p").size()) yield {
+      summary.getElementsByTag("p").get(i).text()
+    } dropRight 1
 
     def fromColon(s: String) = s.split(":")(1).substring(1)
     def getLine(begin: String, elements: Elements): String = {
