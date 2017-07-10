@@ -122,7 +122,17 @@ case class CheeseClient() extends CheeseAPI with CheeseGatherer {
 
   def getCheeseInfo(cheeseName: String) = {
     val endpoint = cheeseInfoEndpoint(cheeseName)
-    val response = Http(endpoint).option(HttpOptions.allowUnsafeSSL).asString
-    if (response.isError) None else Some(CheeseClient.parseInfo(response.body))
+    try {
+      val response = Http(endpoint)
+        .option(HttpOptions.connTimeout(1000))
+        .option(HttpOptions.readTimeout(5000))
+        .option(HttpOptions.allowUnsafeSSL).asString
+      if (response.isError) None else Some(CheeseClient.parseInfo(response.body))
+    } catch {
+      case e: Throwable =>
+        println(e)
+        println(endpoint)
+        None
+    }
   }
 }

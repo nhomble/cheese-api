@@ -6,7 +6,7 @@ import org.jsoup.nodes.Element
 import org.jsoup.select.Elements
 
 import scala.collection.immutable.IndexedSeq
-import scalaj.http.Http
+import scalaj.http.{HttpOptions, Http}
 
 /**
   * Created by nicolas on 7/4/2017.
@@ -56,21 +56,31 @@ object WikiClient {
   }
 
   def parseImgLink(url: String) = {
-    val html = Http(url).asString.body
-    val soup = Jsoup.parse(html)
+    try {
+      val html = Http(url)
+          .option(HttpOptions.readTimeout(2000))
+        .asString.body
+      val soup = Jsoup.parse(html)
 
-    def theImg(element: Elements) = {
-      val img = element.get(0).getElementsByTag("img")
-      if (img.size() > 1) Some("https:" + img.attr("src")) else None
-    }
+      def theImg(element: Elements) = {
+        val img = element.get(0).getElementsByTag("img")
+        if (img.size() > 1) Some("https:" + img.attr("src")) else None
+      }
 
-    val infoBox = soup.getElementsByClass("infobox")
-    if (infoBox.size() > 0) {
-      theImg(infoBox)
+      val infoBox = soup.getElementsByClass("infobox")
+      if (infoBox.size() > 0) {
+        theImg(infoBox)
+      }
+      else {
+        val thumb = soup.getElementsByClass("thumb")
+        if (thumb.size() > 0) theImg(thumb) else None
+      }
     }
-    else {
-      val thumb = soup.getElementsByClass("thumb")
-      if(thumb.size() > 0) theImg(thumb) else None
+    catch {
+      case e: Throwable =>
+        println(e)
+        println(url)
+        None
     }
   }
 
